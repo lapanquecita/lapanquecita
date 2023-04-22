@@ -78,6 +78,7 @@ def main():
             marker_color="#18ffff",
             opacity=1.0,
             line_width=4,
+            line_shape="spline",
         )
     )
 
@@ -90,6 +91,7 @@ def main():
             marker_color="#fbc02d",
             opacity=1.0,
             line_width=4,
+            line_shape="spline",
         )
     )
 
