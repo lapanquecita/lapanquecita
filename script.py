@@ -46,24 +46,32 @@ def main():
 
     # Cargamos el dataset de la AFAC y seleccionamos solo los pasajeros.
     df = pd.read_csv("./AFAC.csv")
-    df = df[df["OPCIONES/ OPTIONS"].str.contains("PASAJEROS")]
 
     # Seleccinamos un aeropuerto al azar.
     aeropuertos = df["AEROPUERTO / AIRPORT"].unique()
     aeropuerto = random.choice(aeropuertos)
 
     # Generamos la serie de tiempo del aeropuerto seleccionado.
-    data = extraer_series_de_tiempo(df, aeropuerto)
+    data = extraer_series_de_tiempo(df, aeropuerto, "PASAJEROS")
+    data2 = extraer_series_de_tiempo(df, aeropuerto, "OPERACIONES")
 
     # Aplicamos un suavizado usando la media móvil trimestral.
     data = data.rolling(3).mean()
+    data2 = data2.rolling(3).mean()
 
     # Seleccionamos los últimos 120 meses (10 años).
     data = data[-120:]
+    data2 = data2[-120:]
 
     # Limpiamos el nombre del aeropuerto, ya que algunos no vienen con acentos.
     aeropuerto = aeropuerto.title()
     aeropuerto = NOMBRES.get(aeropuerto, aeropuerto)
+
+    graficar(data, aeropuerto, "pasajeros")
+    graficar(data2, aeropuerto, "operaciones")
+
+
+def graficar(df, aeropuerto, tipo):
 
     # Vamos a crear dos gráficas de linea, una para pasajeros nacionales y
     # otra para pasajeros internacionales.
@@ -71,9 +79,9 @@ def main():
 
     fig.add_trace(
         go.Scatter(
-            x=data.index,
-            y=data["NACIONAL/DOMESTIC"],
-            name="Pasajeros nacionales",
+            x=df.index,
+            y=df["NACIONAL/DOMESTIC"],
+            name="Nacionales",
             mode="lines",
             marker_color="#18ffff",
             opacity=1.0,
@@ -84,9 +92,9 @@ def main():
 
     fig.add_trace(
         go.Scatter(
-            x=data.index,
-            y=data["INTERNACIONAL/ INTERNATIONAL"],
-            name="Pasajeros internacionales",
+            x=df.index,
+            y=df["INTERNACIONAL/ INTERNATIONAL"],
+            name="Internacionales",
             mode="lines",
             marker_color="#fbc02d",
             opacity=1.0,
@@ -110,7 +118,7 @@ def main():
     )
 
     fig.update_yaxes(
-        title="Número de pasajeros mensuales",
+        title="Número de registros mensuales",
         ticks="outside",
         ticklen=10,
         title_standoff=6,
@@ -119,8 +127,8 @@ def main():
         showgrid=True,
         gridwidth=0.5,
         showline=True,
-        nticks=20,
-        mirror=True
+        mirror=True,
+                nticks=20,
     )
 
     fig.update_layout(
@@ -134,7 +142,7 @@ def main():
         height=720,
         font_color="#FFFFFF",
         font_size=16,
-        title_text=f"Número de pasajeros mensuales en el aeropuerto de <b>{aeropuerto}</b>",
+        title_text=f"Número de {tipo} mensuales en el aeropuerto de <b>{aeropuerto}</b>",
         title_x=0.5,
         title_y=0.96,
         margin_t=60,
@@ -175,15 +183,18 @@ def main():
         ]
     )
 
-    fig.write_image("./1.png")
+    fig.write_image(f"./{tipo}.png")
 
 
-def extraer_series_de_tiempo(df, aeropuerto):
+def extraer_series_de_tiempo(df, aeropuerto, tipo):
     """
     Genera series de tiempo de un aeropuerto.
     """
 
     lista_df = list()
+
+    # Filtrar por tipo de información.
+    df = df[df["OPCIONES/ OPTIONS"].str.contains(tipo)]
 
     # iteramos sobre cada año disponible.
     for año in df["AÑO / YEAR"].unique():
