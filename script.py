@@ -169,7 +169,7 @@ def graficar(df, aeropuerto, tipo):
                 yref="paper",
                 xanchor="center",
                 yanchor="top",
-                text="Fecha de registro"
+                text="Fecha de registro (mes y año)"
             ),
             dict(
                 x=1.01,
