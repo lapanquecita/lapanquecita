@@ -44,14 +44,14 @@ NOMBRES = {
 
 def main():
 
-    # Cargamos el dataset de la AFAC y seleccionamos solo los pasajeros.
+    # Cargamos el dataset de la AFAC.
     df = pd.read_csv("./AFAC.csv")
 
-    # Seleccinamos un aeropuerto al azar.
+    # Seleccionamos un aeropuerto al azar.
     aeropuertos = df["AEROPUERTO / AIRPORT"].unique()
     aeropuerto = random.choice(aeropuertos)
 
-    # Generamos la serie de tiempo del aeropuerto seleccionado.
+    # Generamos las series de tiempo del aeropuerto seleccionado.
     data = extraer_series_de_tiempo(df, aeropuerto, "PASAJEROS")
     data2 = extraer_series_de_tiempo(df, aeropuerto, "OPERACIONES")
 
@@ -67,14 +67,14 @@ def main():
     aeropuerto = aeropuerto.title()
     aeropuerto = NOMBRES.get(aeropuerto, aeropuerto)
 
+    # Vamos a crear dos gráficas de linea, una para datos
+    # nacionales y otra para datos internacionales.
     graficar(data, aeropuerto, "pasajeros")
     graficar(data2, aeropuerto, "operaciones")
 
 
 def graficar(df, aeropuerto, tipo):
 
-    # Vamos a crear dos gráficas de linea, una para pasajeros nacionales y
-    # otra para pasajeros internacionales.
     fig = go.Figure()
 
     fig.add_trace(
@@ -128,7 +128,7 @@ def graficar(df, aeropuerto, tipo):
         gridwidth=0.5,
         showline=True,
         mirror=True,
-                nticks=20,
+        nticks=20,
     )
 
     fig.update_layout(
@@ -193,20 +193,20 @@ def extraer_series_de_tiempo(df, aeropuerto, tipo):
 
     lista_df = list()
 
-    # Filtrar por tipo de información.
+    # Filtrar por aeropuerto y tipo de información.
+    df = df[df["AEROPUERTO / AIRPORT"] == aeropuerto]
     df = df[df["OPCIONES/ OPTIONS"].str.contains(tipo)]
 
     # iteramos sobre cada año disponible.
     for año in df["AÑO / YEAR"].unique():
 
-        # Seleccionamos el aeropuerto y el año de la iteración.
-        temp_df = df[(df["AEROPUERTO / AIRPORT"] == aeropuerto)
-                     & (df["AÑO / YEAR"] == año)]
+        # Seleccionamos el año de la iteración.
+        temp_df = df[df["AÑO / YEAR"] == año]
 
         # Agrupamos por tipo de pasajero.
         temp_df = temp_df.groupby("TIPO/ TYPE").sum()
 
-        # Seleccionamos solo las columnas de meses y voltaemos el DataFrame
+        # Seleccionamos solo las columnas de meses y volteamos el DataFrame
         # para que los meses sean el nuevo índice.
         temp_df = temp_df[MESES.keys()].transpose()
 
