@@ -108,7 +108,6 @@ def graficar(df, aeropuerto, tipo):
         ticks="outside",
         ticklen=10,
         zeroline=False,
-        title_standoff=15,
         tickcolor="#FFFFFF",
         linewidth=2,
         showline=True,
@@ -119,9 +118,9 @@ def graficar(df, aeropuerto, tipo):
 
     fig.update_yaxes(
         title="Número de registros mensuales",
+        title_standoff=6,
         ticks="outside",
         ticklen=10,
-        title_standoff=6,
         tickcolor="#FFFFFF",
         linewidth=2,
         showgrid=True,
