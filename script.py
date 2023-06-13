@@ -55,33 +55,45 @@ def main():
     data = extraer_series_de_tiempo(df, aeropuerto, "PASAJEROS")
     data2 = extraer_series_de_tiempo(df, aeropuerto, "OPERACIONES")
 
-    # Aplicamos un suavizado usando la media móvil trimestral.
-    data = data.rolling(3).mean()
-    data2 = data2.rolling(3).mean()
+    # Aplicamos un suavizado usando la media móvil anual.
+    # De esta forma eliminamos el ruido estacional.
+    data_movil = data.rolling(12).mean()
+    data2_movil = data2.rolling(12).mean()
 
-    # Seleccionamos los últimos 120 meses (10 años).
-    data = data[-120:]
-    data2 = data2[-120:]
+    # Seleccionamos los últimos 96 meses (8 años).
+    meses = -96
+
+    data = data[meses:]
+    data2 = data2[meses:]
+
+    data_movil = data_movil[meses:]
+    data2_movil = data2_movil[meses:]
 
     # Limpiamos el nombre del aeropuerto, ya que algunos no vienen con acentos.
     aeropuerto = aeropuerto.title()
     aeropuerto = NOMBRES.get(aeropuerto, aeropuerto)
 
-    # Vamos a crear dos gráficas de linea, una para datos
-    # nacionales y otra para datos internacionales.
-    graficar(data, aeropuerto, "pasajeros")
-    graficar(data2, aeropuerto, "operaciones")
+    # Vamos a crear 4 gráficas de linea, estas serán para pasajeros
+    # y operaciones de origen nacional e internacional..
+    graficar(data, data_movil, aeropuerto, "pasajeros",
+             "nacionales", "NACIONAL/DOMESTIC")
+    graficar(data, data_movil, aeropuerto, "pasajeros",
+             "internacionales", "INTERNACIONAL/ INTERNATIONAL")
+    graficar(data2, data2_movil, aeropuerto, "operaciones",
+             "nacionales", "NACIONAL/DOMESTIC")
+    graficar(data2, data2_movil, aeropuerto, "operaciones",
+             "internacionales", "INTERNACIONAL/ INTERNATIONAL")
 
 
-def graficar(df, aeropuerto, tipo):
+def graficar(df, df_movil, aeropuerto, tipo, origen, columna):
 
     fig = go.Figure()
 
     fig.add_trace(
         go.Scatter(
             x=df.index,
-            y=df["NACIONAL/DOMESTIC"],
-            name="Nacionales",
+            y=df[columna],
+            name="Valores absolutos",
             mode="lines",
             marker_color="#18ffff",
             opacity=1.0,
@@ -92,11 +104,11 @@ def graficar(df, aeropuerto, tipo):
 
     fig.add_trace(
         go.Scatter(
-            x=df.index,
-            y=df["INTERNACIONAL/ INTERNATIONAL"],
-            name="Internacionales",
+            x=df_movil.index,
+            y=df_movil[columna],
+            name="Promedio móvil a 12 periodos",
             mode="lines",
-            marker_color="#fbc02d",
+            marker_color="#ffca28",
             opacity=1.0,
             line_width=4,
             line_shape="spline",
@@ -141,7 +153,7 @@ def graficar(df, aeropuerto, tipo):
         height=720,
         font_color="#FFFFFF",
         font_size=16,
-        title_text=f"Número de {tipo} mensuales en el aeropuerto de <b>{aeropuerto}</b>",
+        title_text=f"Número de {tipo} {origen} mensuales en el aeropuerto de <b>{aeropuerto}</b>",
         title_x=0.5,
         title_y=0.96,
         margin_t=60,
@@ -182,7 +194,7 @@ def graficar(df, aeropuerto, tipo):
         ]
     )
 
-    fig.write_image(f"./{tipo}.png")
+    fig.write_image(f"./{tipo}_{origen}.png")
 
 
 def extraer_series_de_tiempo(df, aeropuerto, tipo):
