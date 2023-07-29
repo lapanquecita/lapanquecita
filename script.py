@@ -93,7 +93,7 @@ def graficar(df, df_movil, aeropuerto, tipo, origen, columna):
         go.Scatter(
             x=df.index,
             y=df[columna],
-            name="Valores absolutos",
+            name="Cifras absolutas",
             mode="lines",
             marker_color="#18ffff",
             opacity=1.0,
