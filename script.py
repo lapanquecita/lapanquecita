@@ -131,6 +131,7 @@ def graficar(df, df_movil, aeropuerto, tipo, origen, columna):
     fig.update_yaxes(
         title="Número de registros mensuales",
         title_standoff=6,
+        separatethousands=True,
         ticks="outside",
         ticklen=10,
         tickcolor="#FFFFFF",
