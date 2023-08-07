@@ -74,7 +74,7 @@ def main():
     aeropuerto = NOMBRES.get(aeropuerto, aeropuerto)
 
     # Vamos a crear 4 gráficas de linea, estas serán para pasajeros
-    # y operaciones de origen nacional e internacional..
+    # y operaciones de origen nacional e internacional.
     graficar(data, data_movil, aeropuerto, "pasajeros",
              "nacionales", "NACIONAL/DOMESTIC")
     graficar(data, data_movil, aeropuerto, "pasajeros",
@@ -86,6 +86,9 @@ def main():
 
 
 def graficar(df, df_movil, aeropuerto, tipo, origen, columna):
+    """
+    Esta función crea dos gráficas de línea, una con las cifras absolutas y una con el promedio móvil.
+    """
 
     fig = go.Figure()
 
@@ -95,7 +98,7 @@ def graficar(df, df_movil, aeropuerto, tipo, origen, columna):
             y=df[columna],
             name="Cifras absolutas",
             mode="lines",
-            marker_color="#18ffff",
+            line_color="#18ffff",
             opacity=1.0,
             line_width=4,
             line_shape="spline",
@@ -108,7 +111,7 @@ def graficar(df, df_movil, aeropuerto, tipo, origen, columna):
             y=df_movil[columna],
             name="Promedio móvil a 12 periodos",
             mode="lines",
-            marker_color="#ffca28",
+            line_color="#ffca28",
             opacity=1.0,
             line_width=4,
             line_shape="spline",
