@@ -27,6 +27,7 @@ MESES = {
 NOMBRES = {
     "Ciudad De México/Mexico City": "Ciudad de México",
     "Tuxtla Gutierrez (Angel Albino Corzo)": "Tuxtla Gutiérrez",
+    "San Cristobal De Las Casas": "San Cristóbal de las Casas",
     "San Jose Del Cabo": "San José del Cabo",
     "Merida": "Mérida",
     "Bajio": "Bajío",
