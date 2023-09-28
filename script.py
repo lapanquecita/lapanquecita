@@ -185,7 +185,7 @@ def graficar(df, df_movil, aeropuerto, tipo, origen, columna):
                 yref="paper",
                 xanchor="center",
                 yanchor="top",
-                text="Mes y año de regustro"
+                text="Mes y año de registro"
             ),
             dict(
                 x=1.01,
