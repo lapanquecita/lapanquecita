@@ -1,14 +1,14 @@
 # Estadísticas de pasajeros mensuales
 
-![Pasajeros nacionales](./pasajeros_nacionales.png)
+![Pasajeros nacionales](./imgs/pasajeros_nacionales.png)
 
-![Pasajeros internacionales](./pasajeros_internacionales.png)
+![Pasajeros internacionales](./imgs/pasajeros_internacionales.png)
 
 # Estadísticas de operaciones mensuales
 
-![Operaciones nacionales](./operaciones_nacionales.png)
+![Operaciones nacionales](./imgs/operaciones_nacionales.png)
 
-![Operaciones internacionales](./operaciones_internacionales.png)
+![Operaciones internacionales](./imgs/operaciones_internacionales.png)
 
 Fuente: https://www.gob.mx/afac/acciones-y-programas/estadisticas-280404/
 

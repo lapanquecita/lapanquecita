@@ -21,7 +21,7 @@ MESES = {
     "SEP/SEP": 9,
     "OCT/OCT": 10,
     "NOV/NOV": 11,
-    "DIC/DEC": 12
+    "DIC/DEC": 12,
 }
 
 NOMBRES = {
@@ -44,9 +44,13 @@ NOMBRES = {
 
 
 def main():
+    """
+    Iniciamos el script que genera las gráficas de
+    pasajeros y operaciones.
+    """
 
     # Cargamos el dataset de la AFAC.
-    df = pd.read_csv("./AFAC.csv")
+    df = pd.read_csv("./data.csv")
 
     # Seleccionamos un aeropuerto al azar.
     aeropuertos = df["AEROPUERTO / AIRPORT"].unique()
@@ -76,14 +80,28 @@ def main():
 
     # Vamos a crear 4 gráficas de linea, estas serán para pasajeros
     # y operaciones de origen nacional e internacional.
-    graficar(data, data_movil, aeropuerto, "pasajeros",
-             "nacionales", "NACIONAL/DOMESTIC")
-    graficar(data, data_movil, aeropuerto, "pasajeros",
-             "internacionales", "INTERNACIONAL/ INTERNATIONAL")
-    graficar(data2, data2_movil, aeropuerto, "operaciones",
-             "nacionales", "NACIONAL/DOMESTIC")
-    graficar(data2, data2_movil, aeropuerto, "operaciones",
-             "internacionales", "INTERNACIONAL/ INTERNATIONAL")
+    graficar(
+        data, data_movil, aeropuerto, "pasajeros", "nacionales", "NACIONAL/DOMESTIC"
+    )
+    graficar(
+        data,
+        data_movil,
+        aeropuerto,
+        "pasajeros",
+        "internacionales",
+        "INTERNACIONAL/ INTERNATIONAL",
+    )
+    graficar(
+        data2, data2_movil, aeropuerto, "operaciones", "nacionales", "NACIONAL/DOMESTIC"
+    )
+    graficar(
+        data2,
+        data2_movil,
+        aeropuerto,
+        "operaciones",
+        "internacionales",
+        "INTERNACIONAL/ INTERNATIONAL",
+    )
 
 
 def graficar(df, df_movil, aeropuerto, tipo, origen, columna):
@@ -176,7 +194,7 @@ def graficar(df, df_movil, aeropuerto, tipo, origen, columna):
                 yref="paper",
                 xanchor="left",
                 yanchor="top",
-                text="Fuente: AFAC (2023)"
+                text="Fuente: AFAC (2024)",
             ),
             dict(
                 x=0.5,
@@ -185,7 +203,7 @@ def graficar(df, df_movil, aeropuerto, tipo, origen, columna):
                 yref="paper",
                 xanchor="center",
                 yanchor="top",
-                text="Mes y año de registro"
+                text="Mes y año de registro",
             ),
             dict(
                 x=1.01,
@@ -194,12 +212,12 @@ def graficar(df, df_movil, aeropuerto, tipo, origen, columna):
                 yref="paper",
                 xanchor="right",
                 yanchor="top",
-                text="🧁 @lapanquecita"
+                text="🧁 @lapanquecita",
             ),
-        ]
+        ],
     )
 
-    fig.write_image(f"./{tipo}_{origen}.png")
+    fig.write_image(f"./imgs/{tipo}_{origen}.png")
 
 
 def extraer_series_de_tiempo(df, aeropuerto, tipo):
@@ -215,7 +233,6 @@ def extraer_series_de_tiempo(df, aeropuerto, tipo):
 
     # iteramos sobre cada año disponible.
     for año in df["AÑO / YEAR"].unique():
-
         # Seleccionamos el año de la iteración.
         temp_df = df[df["AÑO / YEAR"] == año]
 
@@ -227,8 +244,7 @@ def extraer_series_de_tiempo(df, aeropuerto, tipo):
         temp_df = temp_df[MESES.keys()].transpose()
 
         # Convertimos el índice a DateTimeIndex.
-        temp_df.index = temp_df.index.map(
-            lambda x: datetime(año, MESES[x], 1))
+        temp_df.index = temp_df.index.map(lambda x: datetime(año, MESES[x], 1))
 
         # Agregamos el DataFrame temporal a la lista de DataFrames.
         lista_df.append(temp_df)
@@ -244,5 +260,4 @@ def extraer_series_de_tiempo(df, aeropuerto, tipo):
 
 
 if __name__ == "__main__":
-
     main()
