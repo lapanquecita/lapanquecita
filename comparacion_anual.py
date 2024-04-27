@@ -136,7 +136,7 @@ def main(primer_año, segundo_año, opcion, aeropuerto):
     )
 
     fig.update_yaxes(
-        title="Total de registros mensuales",
+        title=f"Total de {opcion} mensuales",
         range=[0, valor_max * 1.07],
         ticks="outside",
         separatethousands=True,
