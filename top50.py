@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 
@@ -87,12 +88,13 @@ def main(año, opcion, color):
     # Sumamos ambos tipos de operaciones/pasajeros.
     df["total"] = df.sum(axis=1)
 
+    # Calculamos la razón para determinar la posición del texto.
+    df["ratio"] = np.log10(df["total"]) / np.log10(df["total"].max())
+
+    df["text_pos"] = df["ratio"].apply(lambda x: "outside" if x <= 0.97 else "inside")
+
     # Ordenamos los totales de mayor a menor.
     df.sort_values("total", ascending=False, inplace=True)
-
-    # Creamos las posiciones para el texto en cada barra.
-    text_pos = ["outside" for _ in range(len(df))]
-    text_pos[0] = "inside"
 
     # Nos limitamos al top 50.
     df = df.head(50)
@@ -107,7 +109,7 @@ def main(año, opcion, color):
             x=df["total"],
             text=df["total"],
             texttemplate=" %{text:,.0f} ",
-            textposition=text_pos,
+            textposition=df["text_pos"],
             orientation="h",
             marker_color=color,
             marker_line_width=0,
@@ -118,7 +120,8 @@ def main(año, opcion, color):
     )
 
     fig.update_xaxes(
-        range=[0, df["total"].max() * 1.01],
+        type="log",
+        range=[np.log10(df["total"].min()) // 1, np.log10(df["total"].max() * 1.02)],
         separatethousands=True,
         tickfont_size=14,
         ticks="outside",
@@ -199,7 +202,7 @@ def main(año, opcion, color):
                 yref="paper",
                 xanchor="center",
                 yanchor="top",
-                text="Total de registros anuales",
+                text="Total de registros anuales (escala logarítmica)",
             ),
             dict(
                 x=1.01,

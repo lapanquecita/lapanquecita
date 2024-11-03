@@ -7,6 +7,7 @@ from datetime import datetime
 
 import pandas as pd
 import plotly.graph_objects as go
+from statsmodels.tsa.seasonal import STL
 
 
 MESES = {
@@ -60,19 +61,22 @@ def main():
     data = extraer_series_de_tiempo(df, aeropuerto, "PASAJEROS")
     data2 = extraer_series_de_tiempo(df, aeropuerto, "OPERACIONES")
 
-    # Aplicamos un suavizado usando la media móvil anual.
-    # De esta forma eliminamos el ruido estacional.
-    data_movil = data.rolling(12).mean()
-    data2_movil = data2.rolling(12).mean()
+    # Calculamos las tendencias.
+    tendencia_pasajeros_nac = STL(data["NACIONAL/DOMESTIC"]).fit().trend
+    tendencia_pasajeros_int = STL(data["INTERNACIONAL/ INTERNATIONAL"]).fit().trend
+    tendencia_operaciones_nac = STL(data2["NACIONAL/DOMESTIC"]).fit().trend
+    tendencia_operaciones_int = STL(data2["INTERNACIONAL/ INTERNATIONAL"]).fit().trend
 
     # Seleccionamos los últimos 96 meses (8 años).
     meses = -96
 
-    data = data[meses:]
-    data2 = data2[meses:]
+    data = data.tail(meses)
+    data2 = data2.tail(meses)
 
-    data_movil = data_movil[meses:]
-    data2_movil = data2_movil[meses:]
+    tendencia_pasajeros_nac = tendencia_pasajeros_nac.tail(meses)
+    tendencia_pasajeros_int = tendencia_pasajeros_int.tail(meses)
+    tendencia_operaciones_nac = tendencia_operaciones_nac.tail(meses)
+    tendencia_operaciones_int = tendencia_operaciones_int.tail(meses)
 
     # Limpiamos el nombre del aeropuerto, ya que algunos no vienen con acentos.
     aeropuerto = aeropuerto.title()
@@ -81,22 +85,32 @@ def main():
     # Vamos a crear 4 gráficas de linea, estas serán para pasajeros
     # y operaciones de origen nacional e internacional.
     graficar(
-        data, data_movil, aeropuerto, "pasajeros", "nacionales", "NACIONAL/DOMESTIC"
+        data,
+        tendencia_pasajeros_nac,
+        aeropuerto,
+        "pasajeros",
+        "nacionales",
+        "NACIONAL/DOMESTIC",
     )
     graficar(
         data,
-        data_movil,
+        tendencia_pasajeros_int,
         aeropuerto,
         "pasajeros",
         "internacionales",
         "INTERNACIONAL/ INTERNATIONAL",
     )
     graficar(
-        data2, data2_movil, aeropuerto, "operaciones", "nacionales", "NACIONAL/DOMESTIC"
+        data2,
+        tendencia_operaciones_nac,
+        aeropuerto,
+        "operaciones",
+        "nacionales",
+        "NACIONAL/DOMESTIC",
     )
     graficar(
         data2,
-        data2_movil,
+        tendencia_operaciones_int,
         aeropuerto,
         "operaciones",
         "internacionales",
@@ -104,7 +118,7 @@ def main():
     )
 
 
-def graficar(df, df_movil, aeropuerto, tipo, origen, columna):
+def graficar(df, df_tendencia, aeropuerto, tipo, origen, columna):
     """
     Esta función crea dos gráficas de línea, una con las cifras absolutas y una con el promedio móvil.
     """
@@ -126,9 +140,9 @@ def graficar(df, df_movil, aeropuerto, tipo, origen, columna):
 
     fig.add_trace(
         go.Scatter(
-            x=df_movil.index,
-            y=df_movil[columna],
-            name="Promedio móvil a 12 periodos",
+            x=df_tendencia.index,
+            y=df_tendencia.values,
+            name="Tendencia (12 periodos)",
             mode="lines",
             line_color="#ffca28",
             opacity=1.0,
@@ -167,6 +181,8 @@ def graficar(df, df_movil, aeropuerto, tipo, origen, columna):
 
     fig.update_layout(
         legend_itemsizing="constant",
+        legend_borderwidth=1,
+        legend_bordercolor="#FFFFFF",
         showlegend=True,
         legend_x=0.01,
         legend_y=0.98,
