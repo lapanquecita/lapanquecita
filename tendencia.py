@@ -68,7 +68,7 @@ def main():
     tendencia_operaciones_int = STL(data2["INTERNACIONAL/ INTERNATIONAL"]).fit().trend
 
     # Seleccionamos los últimos 96 meses (8 años).
-    meses = -96
+    meses = 96
 
     data = data.tail(meses)
     data2 = data2.tail(meses)
