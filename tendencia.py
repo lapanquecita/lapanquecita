@@ -85,40 +85,39 @@ def main():
     # Vamos a crear 4 gráficas de linea, estas serán para pasajeros
     # y operaciones de origen nacional e internacional.
     graficar(
-        data,
+        data["NACIONAL/DOMESTIC"],
         tendencia_pasajeros_nac,
         aeropuerto,
         "pasajeros",
         "nacionales",
-        "NACIONAL/DOMESTIC",
     )
+
     graficar(
-        data,
+        data["INTERNACIONAL/ INTERNATIONAL"],
         tendencia_pasajeros_int,
         aeropuerto,
         "pasajeros",
         "internacionales",
-        "INTERNACIONAL/ INTERNATIONAL",
     )
+
     graficar(
-        data2,
+        data2["NACIONAL/DOMESTIC"],
         tendencia_operaciones_nac,
         aeropuerto,
         "operaciones",
         "nacionales",
-        "NACIONAL/DOMESTIC",
     )
+
     graficar(
-        data2,
+        data2["INTERNACIONAL/ INTERNATIONAL"],
         tendencia_operaciones_int,
         aeropuerto,
         "operaciones",
         "internacionales",
-        "INTERNACIONAL/ INTERNATIONAL",
     )
 
 
-def graficar(df, df_tendencia, aeropuerto, tipo, origen, columna):
+def graficar(df, df_tendencia, aeropuerto, tipo, origen):
     """
     Esta función crea dos gráficas de línea, una con las cifras absolutas y una con el promedio móvil.
     """
@@ -128,7 +127,7 @@ def graficar(df, df_tendencia, aeropuerto, tipo, origen, columna):
     fig.add_trace(
         go.Scatter(
             x=df.index,
-            y=df[columna],
+            y=df.values,
             name="Cifras absolutas",
             mode="lines",
             line_color="#18ffff",
@@ -147,7 +146,6 @@ def graficar(df, df_tendencia, aeropuerto, tipo, origen, columna):
             line_color="#ffca28",
             opacity=1.0,
             line_width=4,
-            line_shape="spline",
         )
     )
 
