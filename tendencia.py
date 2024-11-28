@@ -62,21 +62,21 @@ def main():
     data2 = extraer_series_de_tiempo(df, aeropuerto, "OPERACIONES")
 
     # Calculamos las tendencias.
-    tendencia_pasajeros_nac = STL(data["NACIONAL/DOMESTIC"]).fit().trend
-    tendencia_pasajeros_int = STL(data["INTERNACIONAL/ INTERNATIONAL"]).fit().trend
-    tendencia_operaciones_nac = STL(data2["NACIONAL/DOMESTIC"]).fit().trend
-    tendencia_operaciones_int = STL(data2["INTERNACIONAL/ INTERNATIONAL"]).fit().trend
+    data["NACIONAL/DOMESTIC_trend"] = STL(data["NACIONAL/DOMESTIC"]).fit().trend
+    data["INTERNACIONAL/ INTERNATIONAL_trend"] = (
+        STL(data["INTERNACIONAL/ INTERNATIONAL"]).fit().trend
+    )
+
+    data2["NACIONAL/DOMESTIC_trend"] = STL(data2["NACIONAL/DOMESTIC"]).fit().trend
+    data2["INTERNACIONAL/ INTERNATIONAL_trend"] = (
+        STL(data2["INTERNACIONAL/ INTERNATIONAL"]).fit().trend
+    )
 
     # Seleccionamos los últimos 96 meses (8 años).
     meses = 96
 
     data = data.tail(meses)
     data2 = data2.tail(meses)
-
-    tendencia_pasajeros_nac = tendencia_pasajeros_nac.tail(meses)
-    tendencia_pasajeros_int = tendencia_pasajeros_int.tail(meses)
-    tendencia_operaciones_nac = tendencia_operaciones_nac.tail(meses)
-    tendencia_operaciones_int = tendencia_operaciones_int.tail(meses)
 
     # Limpiamos el nombre del aeropuerto, ya que algunos no vienen con acentos.
     aeropuerto = aeropuerto.title()
@@ -86,7 +86,7 @@ def main():
     # y operaciones de origen nacional e internacional.
     graficar(
         data["NACIONAL/DOMESTIC"],
-        tendencia_pasajeros_nac,
+        data["NACIONAL/DOMESTIC_trend"],
         aeropuerto,
         "pasajeros",
         "nacionales",
@@ -94,7 +94,7 @@ def main():
 
     graficar(
         data["INTERNACIONAL/ INTERNATIONAL"],
-        tendencia_pasajeros_int,
+        data["INTERNACIONAL/ INTERNATIONAL_trend"],
         aeropuerto,
         "pasajeros",
         "internacionales",
@@ -102,7 +102,7 @@ def main():
 
     graficar(
         data2["NACIONAL/DOMESTIC"],
-        tendencia_operaciones_nac,
+        data2["NACIONAL/DOMESTIC_trend"],
         aeropuerto,
         "operaciones",
         "nacionales",
@@ -110,7 +110,7 @@ def main():
 
     graficar(
         data2["INTERNACIONAL/ INTERNATIONAL"],
-        tendencia_operaciones_int,
+        data2["INTERNACIONAL/ INTERNATIONAL_trend"],
         aeropuerto,
         "operaciones",
         "internacionales",
