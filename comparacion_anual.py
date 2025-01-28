@@ -140,7 +140,7 @@ def main(primer_año, segundo_año, opcion, aeropuerto):
         range=[0, valor_max * 1.07],
         ticks="outside",
         separatethousands=True,
-        titlefont_size=18,
+        title_font_size=18,
         tickfont_size=14,
         ticklen=10,
         title_standoff=6,
