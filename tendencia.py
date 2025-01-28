@@ -208,7 +208,7 @@ def graficar(df, df_tendencia, aeropuerto, tipo, origen):
                 yref="paper",
                 xanchor="left",
                 yanchor="top",
-                text="Fuente: AFAC (2024)",
+                text="Fuente: AFAC (2025)",
             ),
             dict(
                 x=0.5,
