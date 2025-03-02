@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 # Este diccionario es usado para limpiar los nombres
 # de algunos aeropuertos.
 NOMBRES = {
-    "Ciudad De México/Mexico City": "Ciudad de México",
+    "Ciudad De México": "Ciudad de México",
     "Tuxtla Gutierrez (Angel Albino Corzo)": "Tuxtla Gutiérrez",
     "San Cristobal De Las Casas": "San Cristóbal de las Casas",
     "San Jose Del Cabo": "San José del Cabo",
@@ -23,18 +23,18 @@ NOMBRES = {
 }
 
 MESES = [
-    "ENE/JAN",
-    "FEB/FEB",
-    "MAR/MAR",
-    "ABR/APR",
-    "MAY/MAY",
-    "JUN/JUN",
-    "JUL/JUL",
-    "AGO/AUG",
-    "SEP/SEP",
-    "OCT/OCT",
-    "NOV/NOV",
-    "DIC/DEC",
+    "Ene.",
+    "Feb.",
+    "Mar.",
+    "Abr.",
+    "May.",
+    "Jun.",
+    "Jul.",
+    "Ago.",
+    "Sep.",
+    "Oct.",
+    "Nov.",
+    "Dic.",
 ]
 
 
@@ -53,7 +53,7 @@ def main(primer_año, segundo_año, opcion, aeropuerto):
         El segundo año que nos interesa comparar.
 
     opcion : str
-        El tipo de opción, puede ser: operaciones | pasajeros
+        El tipo de opción, puede ser: OPERACIONES | PASAJEROS
 
     aeropuerto : str
         El nombre del aeropuerto que nos interesa comparar.
@@ -61,22 +61,29 @@ def main(primer_año, segundo_año, opcion, aeropuerto):
     """
 
     # Cargamos el dataset de estadísticas operativas.
-    df = pd.read_csv("./data.csv")
+    df = pd.read_csv("./data.csv", parse_dates=["FECHA"], index_col=0)
 
     # Filtramos por el aeropuerto que nos interesa.
-    df = df[df["AEROPUERTO / AIRPORT"] == aeropuerto]
+    df = df[df["AEROPUERTO"] == aeropuerto]
 
-    # Dependiendo de la opción, es el filtro que se usará y el título.
-    if opcion == "operaciones":
-        df = df[df["OPCIONES/ OPTIONS"] == "OPERACIONES/ FLIGHTS"]
-    elif opcion == "pasajeros":
-        df = df[df["OPCIONES/ OPTIONS"] == "PASAJEROS/PASSENGERS"]
+    # Seleccionamos el tipo de opción.
+    df = df[df["OPCIONES"] == opcion]
 
-    # Transformamos nuestro DataFrame.
-    df = df.groupby("AÑO / YEAR").sum(numeric_only=True)[MESES].transpose()
+    # Seleccionamos los años.
+    df = df[df.index.year.isin([primer_año, segundo_año])]
 
-    # Le damos formato al nombre del mes.
-    df.index = df.index.map(lambda x: f"{x[:3].title()}.")
+    # Transformamos el DataFrame para que el índice sean los meses
+    # y las columnas los dos años a comparar.
+    df = df.pivot_table(
+        index=df.index.month,
+        columns=df.index.year,
+        values="TOTAL",
+        aggfunc="sum",
+        fill_value=0,
+    )
+
+    # Cambiamos los meses a sus nombres.
+    df.index = MESES
 
     # Limpiamos el nombre del aeropuerto.
     aeropuerto = NOMBRES.get(aeropuerto.title(), aeropuerto.title())
@@ -167,7 +174,7 @@ def main(primer_año, segundo_año, opcion, aeropuerto):
         font_family="Lato",
         font_color="#FFFFFF",
         font_size=18,
-        title_text=f"Comparación del número de {opcion} en el aeropuerto de <b>{aeropuerto}</b> ({primer_año} vs. {segundo_año})",
+        title_text=f"Comparación del número de {opcion.lower()} en el aeropuerto de <b>{aeropuerto}</b> ({primer_año} vs. {segundo_año})",
         title_x=0.5,
         title_y=0.975,
         margin_t=90,
@@ -185,7 +192,7 @@ def main(primer_año, segundo_año, opcion, aeropuerto):
                 yref="paper",
                 xanchor="left",
                 yanchor="top",
-                text="Fuente: AFAC (2024)",
+                text="Fuente: AFAC (2025)",
             ),
             dict(
                 x=0.5,
@@ -210,7 +217,7 @@ def main(primer_año, segundo_año, opcion, aeropuerto):
 
     # El nombre del archivo depende de los parámetros
     # de la función principal.
-    fig.write_image(f"./comparacion_{opcion}_{aeropuerto}.png")
+    fig.write_image(f"./comparacion_{opcion}_{aeropuerto.lower()}.png")
 
 
 def formatear_texto(x):
@@ -220,16 +227,15 @@ def formatear_texto(x):
     """
 
     if x >= 1000000:
-        return f"{x/1000000:,.2f}M"
+        return f"{x / 1000000:,.2f}M"
     elif x >= 100000:
-        return f"{x/1000:,.0f}k"
+        return f"{x / 1000:,.0f}k"
     elif x >= 10000:
-        return f"{x/1000:,.1f}k"
+        return f"{x / 1000:,.1f}k"
     else:
         return f"{x:,.0f}"
 
 
 if __name__ == "__main__":
-    main(2022, 2023, "pasajeros", "ACAPULCO")
-    main(2022, 2023, "operaciones", "ACAPULCO")
-
+    main(2023, 2024, "PASAJEROS", "ACAPULCO")
+    main(2023, 2024, "OPERACIONES", "ACAPULCO")

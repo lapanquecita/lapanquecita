@@ -3,30 +3,14 @@ Fuente: https://www.gob.mx/afac/acciones-y-programas/estadisticas-280404/
 """
 
 import random
-from datetime import datetime
 
 import pandas as pd
 import plotly.graph_objects as go
 from statsmodels.tsa.seasonal import STL
 
 
-MESES = {
-    "ENE/JAN": 1,
-    "FEB/FEB": 2,
-    "MAR/MAR": 3,
-    "ABR/APR": 4,
-    "MAY/MAY": 5,
-    "JUN/JUN": 6,
-    "JUL/JUL": 7,
-    "AGO/AUG": 8,
-    "SEP/SEP": 9,
-    "OCT/OCT": 10,
-    "NOV/NOV": 11,
-    "DIC/DEC": 12,
-}
-
 NOMBRES = {
-    "Ciudad De México/Mexico City": "Ciudad de México",
+    "Ciudad De México": "Ciudad de México",
     "Tuxtla Gutierrez (Angel Albino Corzo)": "Tuxtla Gutiérrez",
     "San Cristobal De Las Casas": "San Cristóbal de las Casas",
     "San Jose Del Cabo": "San José del Cabo",
@@ -51,32 +35,47 @@ def main():
     """
 
     # Cargamos el dataset de la AFAC.
-    df = pd.read_csv("./data.csv")
+    df = pd.read_csv("./data.csv", parse_dates=["FECHA"])
 
     # Seleccionamos un aeropuerto al azar.
-    aeropuertos = df["AEROPUERTO / AIRPORT"].unique()
+    aeropuertos = df["AEROPUERTO"].unique()
     aeropuerto = random.choice(aeropuertos)
 
-    # Generamos las series de tiempo del aeropuerto seleccionado.
-    data = extraer_series_de_tiempo(df, aeropuerto, "PASAJEROS")
-    data2 = extraer_series_de_tiempo(df, aeropuerto, "OPERACIONES")
+    # Filtramos el DataFrame con el aeropuerto seleccionado.
+    df = df[df["AEROPUERTO"] == aeropuerto]
 
-    # Calculamos las tendencias.
-    data["NACIONAL/DOMESTIC_trend"] = STL(data["NACIONAL/DOMESTIC"]).fit().trend
-    data["INTERNACIONAL/ INTERNATIONAL_trend"] = (
-        STL(data["INTERNACIONAL/ INTERNATIONAL"]).fit().trend
+    # Quitamos valores en cero.
+    df = df[df["TOTAL"] != 0]
+
+    # Transformamos el DataFrame para generar series de tiempo para
+    # pasajeros y operaciones por mes.
+    # En caso de no haber registros interncionales, los creamos en cero.
+    pasajeros = df[df["OPCIONES"] == "PASAJEROS"].pivot_table(
+        index="FECHA", columns="TIPO", values="TOTAL", aggfunc="sum", fill_value=0
     )
 
-    data2["NACIONAL/DOMESTIC_trend"] = STL(data2["NACIONAL/DOMESTIC"]).fit().trend
-    data2["INTERNACIONAL/ INTERNATIONAL_trend"] = (
-        STL(data2["INTERNACIONAL/ INTERNATIONAL"]).fit().trend
+    if "INTERNACIONAL" not in pasajeros.columns:
+        pasajeros["INTERNACIONAL"] = 0
+
+    operaciones = df[df["OPCIONES"] == "OPERACIONES"].pivot_table(
+        index="FECHA", columns="TIPO", values="TOTAL", aggfunc="sum", fill_value=0
     )
+
+    if "INTERNACIONAL" not in operaciones.columns:
+        operaciones["INTERNACIONAL"] = 0
+
+    # Calculamos las tendencias a 12 periodos.
+    pasajeros["NACIONAL_trend"] = STL(pasajeros["NACIONAL"]).fit(12).trend
+    pasajeros["INTERNACIONAL_trend"] = STL(pasajeros["INTERNACIONAL"]).fit(12).trend
+
+    operaciones["NACIONAL_trend"] = STL(operaciones["NACIONAL"]).fit(12).trend
+    operaciones["INTERNACIONAL_trend"] = STL(operaciones["INTERNACIONAL"]).fit(12).trend
 
     # Seleccionamos los últimos 96 meses (8 años).
     meses = 96
 
-    data = data.tail(meses)
-    data2 = data2.tail(meses)
+    pasajeros = pasajeros.tail(meses)
+    operaciones = operaciones.tail(meses)
 
     # Limpiamos el nombre del aeropuerto, ya que algunos no vienen con acentos.
     aeropuerto = aeropuerto.title()
@@ -85,32 +84,32 @@ def main():
     # Vamos a crear 4 gráficas de linea, estas serán para pasajeros
     # y operaciones de origen nacional e internacional.
     graficar(
-        data["NACIONAL/DOMESTIC"],
-        data["NACIONAL/DOMESTIC_trend"],
+        pasajeros["NACIONAL"],
+        pasajeros["NACIONAL_trend"],
         aeropuerto,
         "pasajeros",
         "nacionales",
     )
 
     graficar(
-        data["INTERNACIONAL/ INTERNATIONAL"],
-        data["INTERNACIONAL/ INTERNATIONAL_trend"],
+        pasajeros["INTERNACIONAL"],
+        pasajeros["INTERNACIONAL_trend"],
         aeropuerto,
         "pasajeros",
         "internacionales",
     )
 
     graficar(
-        data2["NACIONAL/DOMESTIC"],
-        data2["NACIONAL/DOMESTIC_trend"],
+        operaciones["NACIONAL"],
+        operaciones["NACIONAL_trend"],
         aeropuerto,
         "operaciones",
         "nacionales",
     )
 
     graficar(
-        data2["INTERNACIONAL/ INTERNATIONAL"],
-        data2["INTERNACIONAL/ INTERNATIONAL_trend"],
+        operaciones["INTERNACIONAL"],
+        operaciones["INTERNACIONAL_trend"],
         aeropuerto,
         "operaciones",
         "internacionales",
@@ -119,7 +118,8 @@ def main():
 
 def graficar(df, df_tendencia, aeropuerto, tipo, origen):
     """
-    Esta función crea dos gráficas de línea, una con las cifras absolutas y una con el promedio móvil.
+    Esta función crea un lienzo con dos gráficas de línea,
+    una con las cifras absolutas y otra con la tendencia.
     """
 
     fig = go.Figure()
@@ -232,45 +232,6 @@ def graficar(df, df_tendencia, aeropuerto, tipo, origen):
     )
 
     fig.write_image(f"./imgs/{tipo}_{origen}.png")
-
-
-def extraer_series_de_tiempo(df, aeropuerto, tipo):
-    """
-    Genera series de tiempo de un aeropuerto.
-    """
-
-    lista_df = list()
-
-    # Filtrar por aeropuerto y tipo de información.
-    df = df[df["AEROPUERTO / AIRPORT"] == aeropuerto]
-    df = df[df["OPCIONES/ OPTIONS"].str.contains(tipo)]
-
-    # iteramos sobre cada año disponible.
-    for año in df["AÑO / YEAR"].unique():
-        # Seleccionamos el año de la iteración.
-        temp_df = df[df["AÑO / YEAR"] == año]
-
-        # Agrupamos por tipo de pasajero.
-        temp_df = temp_df.groupby("TIPO/ TYPE").sum()
-
-        # Seleccionamos solo las columnas de meses y volteamos el DataFrame
-        # para que los meses sean el nuevo índice.
-        temp_df = temp_df[MESES.keys()].transpose()
-
-        # Convertimos el índice a DateTimeIndex.
-        temp_df.index = temp_df.index.map(lambda x: datetime(año, MESES[x], 1))
-
-        # Agregamos el DataFrame temporal a la lista de DataFrames.
-        lista_df.append(temp_df)
-
-    # Unimos todos los DataFrames.
-    final = pd.concat(lista_df)
-
-    # Agregamos una columna para el total y filtramos los registros en ceros.
-    final["total"] = final.sum(axis=1)
-    final = final[final["total"] != 0]
-
-    return final
 
 
 if __name__ == "__main__":

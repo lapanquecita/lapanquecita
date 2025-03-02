@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 # Este diccionario es usado para limpiar los nombres
 # de algunos aeropuertos.
 NOMBRES = {
-    "Ciudad De México/Mexico City": "Ciudad de México",
+    "Ciudad De México": "Ciudad de México",
     "Tuxtla Gutierrez (Angel Albino Corzo)": "Tuxtla Gutiérrez",
     "San Cristobal De Las Casas": "San Cristóbal de las Casas",
     "San Jose Del Cabo": "San José del Cabo",
@@ -43,54 +43,37 @@ def main(año, opcion, color):
     """
 
     # Cargamos el dataset de estadísticas operativas.
-    df = pd.read_csv("./data.csv")
+    df = pd.read_csv("./data.csv", parse_dates=["FECHA"])
 
     # Filtramos por el Año que nos interesa.`
-    df = df[df["AÑO / YEAR"] == año]
+    df = df[df["FECHA"].dt.year == año]
 
-    # Seleccionamos los aeropuertos que tuvieron tráfico internacional.
-    internacional = df[
-        (df["TIPO/ TYPE"] == "INTERNACIONAL/ INTERNATIONAL")
-        & (df["OPCIONES/ OPTIONS"] == "OPERACIONES/ FLIGHTS")
-        & (df["TOTAL/TOTAL"] != 0)
-    ]
+    # Obtenemos aeropuertos con tráfico internacional.
+    internacional = (
+        df[(df["OPCIONES"] == "OPERACIONES") & (df["TIPO"] == "INTERNACIONAL")]
+        .groupby("AEROPUERTO")
+        .sum(numeric_only=True)
+    )
+    internacional = internacional[internacional["TOTAL"] != 0].index.tolist()
 
-    # Limpiamos los nombres de los aeropuertos con tráfico internacional.
-    internacional = [
-        NOMBRES.get(item.title(), item.title())
-        for item in internacional["AEROPUERTO / AIRPORT"].unique()
-    ]
-
-    # Dependiendo de la opción creamos filtros y textos específicos.
-    if opcion == "operaciones":
-        df = df[df["OPCIONES/ OPTIONS"] == "OPERACIONES/ FLIGHTS"]
-        titulo = f"Los 50 aeropuertos de México con mayor número de operaciones durante el {año}"
-        nota = "<b>Notas:</b><br>El 🌎 indica que el aeropuerto recibió tráfico internacional.<br>Una operación puede ser un aterrizaje o un despegue.<br>Las cifras incluyen operaciones nacionales e internacionales."
-    elif opcion == "pasajeros":
-        df = df[df["OPCIONES/ OPTIONS"] == "PASAJEROS/PASSENGERS"]
-        titulo = f"Los 50 aeropuertos de México con mayor número de pasajeros durante el {año}"
-        nota = "<b>Notas:</b><br>El 🌎 indica que el aeropuerto recibió tráfico internacional.<br>Las cifras incluyen pasajeros nacionales y extranjeros."
-
-    # Transformamos el DataFrame usando solo las columnas necesarias.
+    # Transformamos el DataFrame.
     df = df.pivot_table(
-        index="AEROPUERTO / AIRPORT",
-        columns="TIPO/ TYPE",
-        values="TOTAL/TOTAL",
-        aggfunc="sum",
+        index="AEROPUERTO", columns="TIPO", values="TOTAL", aggfunc="sum", fill_value=0
     )
 
-    # Limpiamos el nombre del aeropuerto.
-    df.index = df.index.str.title().map(lambda x: NOMBRES.get(x, x))
-
     # Agregamos un emoji de 🌎 para los aeropuertos con tráfico internacional.
-    df.index = df.index.map(lambda x: f"{x} 🌎" if x in internacional else x)
+    # Aprovechamos para limpiar el nombre del aeropuerto.
+    df.index = df.index.map(
+        lambda x: f"{NOMBRES.get(x.title(), x.title())} 🌎"
+        if x in internacional
+        else NOMBRES.get(x.title(), x.title())
+    )
 
     # Sumamos ambos tipos de operaciones/pasajeros.
     df["total"] = df.sum(axis=1)
 
     # Calculamos la razón para determinar la posición del texto.
     df["ratio"] = np.log10(df["total"]) / np.log10(df["total"].max())
-
     df["text_pos"] = df["ratio"].apply(lambda x: "outside" if x <= 0.97 else "inside")
 
     # Ordenamos los totales de mayor a menor.
@@ -98,6 +81,14 @@ def main(año, opcion, color):
 
     # Nos limitamos al top 50.
     df = df.head(50)
+
+    # Dependiendo de la opción creamos filtros y textos específicos.
+    if opcion == "OPERACIONES":
+        titulo = f"Los 50 aeropuertos de México con mayor número de operaciones durante el {año}"
+        nota = "<b>Notas:</b><br>El 🌎 indica que el aeropuerto recibió tráfico internacional.<br>Una operación puede ser un aterrizaje o un despegue.<br>Las cifras incluyen operaciones nacionales e internacionales."
+    elif opcion == "PASAJEROS":
+        titulo = f"Los 50 aeropuertos de México con mayor número de pasajeros durante el {año}"
+        nota = "<b>Notas:</b><br>El 🌎 indica que el aeropuerto recibió tráfico internacional.<br>Las cifras incluyen pasajeros nacionales y extranjeros."
 
     fig = go.Figure()
 
@@ -193,7 +184,7 @@ def main(año, opcion, color):
                 yref="paper",
                 xanchor="left",
                 yanchor="top",
-                text="Fuente: AFAC (2024)",
+                text="Fuente: AFAC (2025)",
             ),
             dict(
                 x=0.53,
@@ -220,5 +211,5 @@ def main(año, opcion, color):
 
 
 if __name__ == "__main__":
-    main(2023, "operaciones", "#fc4103")
-    main(2023, "pasajeros", "#fc036b")
+    main(2024, "OPERACIONES", "#fc4103")
+    main(2024, "PASAJEROS", "#fc036b")
