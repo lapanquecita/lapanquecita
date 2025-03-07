@@ -64,12 +64,12 @@ def main():
     if "INTERNACIONAL" not in operaciones.columns:
         operaciones["INTERNACIONAL"] = 0
 
-    # Calculamos las tendencias a 12 periodos.
-    pasajeros["NACIONAL_trend"] = STL(pasajeros["NACIONAL"]).fit(12).trend
-    pasajeros["INTERNACIONAL_trend"] = STL(pasajeros["INTERNACIONAL"]).fit(12).trend
+    # Calculamos las tendencias. Nuestra frecuencia es mensual, se usarán 12 periodos en automático.
+    pasajeros["NACIONAL_trend"] = STL(pasajeros["NACIONAL"]).fit().trend
+    pasajeros["INTERNACIONAL_trend"] = STL(pasajeros["INTERNACIONAL"]).fit().trend
 
-    operaciones["NACIONAL_trend"] = STL(operaciones["NACIONAL"]).fit(12).trend
-    operaciones["INTERNACIONAL_trend"] = STL(operaciones["INTERNACIONAL"]).fit(12).trend
+    operaciones["NACIONAL_trend"] = STL(operaciones["NACIONAL"]).fit().trend
+    operaciones["INTERNACIONAL_trend"] = STL(operaciones["INTERNACIONAL"]).fit().trend
 
     # Seleccionamos los últimos 96 meses (8 años).
     meses = 96
