@@ -71,8 +71,8 @@ def main():
     operaciones["NACIONAL_trend"] = STL(operaciones["NACIONAL"]).fit().trend
     operaciones["INTERNACIONAL_trend"] = STL(operaciones["INTERNACIONAL"]).fit().trend
 
-    # Seleccionamos los últimos 96 meses (8 años).
-    meses = 96
+    # Seleccionamos los últimos 120 meses (10 años).
+    meses = 120
 
     pasajeros = pasajeros.tail(meses)
     operaciones = operaciones.tail(meses)
@@ -164,6 +164,7 @@ def graficar(df, df_tendencia, aeropuerto, tipo, origen):
 
     fig.update_yaxes(
         title="Número de registros mensuales",
+        tickformat="s",
         title_standoff=15,
         separatethousands=True,
         ticks="outside",
