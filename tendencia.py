@@ -35,7 +35,7 @@ def main():
     """
 
     # Cargamos el dataset de la AFAC.
-    df = pd.read_csv("./data.csv", parse_dates=["FECHA"])
+    df = pd.read_csv("./data.csv", parse_dates=["PERIODO"])
 
     # Seleccionamos un aeropuerto al azar.
     aeropuertos = df["AEROPUERTO"].unique()
@@ -51,14 +51,14 @@ def main():
     # pasajeros y operaciones por mes.
     # En caso de no haber registros interncionales, los creamos en cero.
     pasajeros = df[df["OPCIONES"] == "PASAJEROS"].pivot_table(
-        index="FECHA", columns="TIPO", values="TOTAL", aggfunc="sum", fill_value=0
+        index="PERIODO", columns="TIPO", values="TOTAL", aggfunc="sum", fill_value=0
     )
 
     if "INTERNACIONAL" not in pasajeros.columns:
         pasajeros["INTERNACIONAL"] = 0
 
     operaciones = df[df["OPCIONES"] == "OPERACIONES"].pivot_table(
-        index="FECHA", columns="TIPO", values="TOTAL", aggfunc="sum", fill_value=0
+        index="PERIODO", columns="TIPO", values="TOTAL", aggfunc="sum", fill_value=0
     )
 
     if "INTERNACIONAL" not in operaciones.columns:
@@ -237,3 +237,4 @@ def graficar(df, df_tendencia, aeropuerto, tipo, origen):
 
 if __name__ == "__main__":
     main()
+
