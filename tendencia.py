@@ -131,7 +131,6 @@ def graficar(df, df_tendencia, aeropuerto, tipo, origen):
             name="Cifras absolutas",
             mode="lines",
             line_color="#18ffff",
-            opacity=1.0,
             line_width=4,
             line_shape="spline",
         )
@@ -144,7 +143,6 @@ def graficar(df, df_tendencia, aeropuerto, tipo, origen):
             name="Tendencia (12 periodos)",
             mode="lines",
             line_color="#ffca28",
-            opacity=1.0,
             line_width=4,
         )
     )
@@ -237,4 +235,5 @@ def graficar(df, df_tendencia, aeropuerto, tipo, origen):
 
 if __name__ == "__main__":
     main()
+
 
