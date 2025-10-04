@@ -128,7 +128,7 @@ def graficar(df, df_tendencia, aeropuerto, tipo, origen):
         go.Scatter(
             x=df.index,
             y=df.values,
-            name="Cifras absolutas",
+            name="Serie original",
             mode="lines",
             line_color="#18ffff",
             line_width=4,
@@ -140,7 +140,7 @@ def graficar(df, df_tendencia, aeropuerto, tipo, origen):
         go.Scatter(
             x=df_tendencia.index,
             y=df_tendencia.values,
-            name="Tendencia (12 periodos)",
+            name="Tendencia a 12 periodos",
             mode="lines",
             line_color="#ffca28",
             line_width=4,
@@ -235,6 +235,7 @@ def graficar(df, df_tendencia, aeropuerto, tipo, origen):
 
 if __name__ == "__main__":
     main()
+
 
 
 
