@@ -191,7 +191,7 @@ def graficar(df, df_tendencia, aeropuerto, tipo, origen):
         font_size=24,
         title_text=f"Número de {tipo} {origen} mensuales en el aeropuerto de <b>{aeropuerto}</b>",
         title_x=0.5,
-        title_y=0.97,
+        title_y=0.965,
         margin_t=80,
         margin_l=160,
         margin_r=40,
@@ -235,5 +235,6 @@ def graficar(df, df_tendencia, aeropuerto, tipo, origen):
 
 if __name__ == "__main__":
     main()
+
 
 
