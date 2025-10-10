@@ -178,7 +178,7 @@ def graficar(df, df_tendencia, aeropuerto, tipo, origen):
 
     fig.update_layout(
         legend_itemsizing="constant",
-        legend_borderwidth=2,
+        legend_borderwidth=1,
         legend_bordercolor="#FFFFFF",
         showlegend=True,
         legend_x=0.01,
@@ -235,6 +235,7 @@ def graficar(df, df_tendencia, aeropuerto, tipo, origen):
 
 if __name__ == "__main__":
     main()
+
 
 
 
