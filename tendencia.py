@@ -44,25 +44,15 @@ def main():
     # Filtramos el DataFrame con el aeropuerto seleccionado.
     df = df[df["AEROPUERTO"] == aeropuerto]
 
-    # Quitamos valores en cero.
-    df = df[df["TOTAL"] != 0]
-
-    # Transformamos el DataFrame para generar series de tiempo para
-    # pasajeros y operaciones por mes.
-    # En caso de no haber registros interncionales, los creamos en cero.
-    pasajeros = df[df["OPCIONES"] == "PASAJEROS"].pivot_table(
-        index="PERIODO", columns="TIPO", values="TOTAL", aggfunc="sum", fill_value=0
+    # Transformamos el DataFrame para que se encuentre en dos niveles.
+    # El primero es el tipo de opción, el segundo el tipo de tráfico.
+    df = df.pivot_table(
+        index="PERIODO", columns=["OPCIONES", "TIPO"], values="TOTAL", fill_value=0
     )
 
-    if "INTERNACIONAL" not in pasajeros.columns:
-        pasajeros["INTERNACIONAL"] = 0
-
-    operaciones = df[df["OPCIONES"] == "OPERACIONES"].pivot_table(
-        index="PERIODO", columns="TIPO", values="TOTAL", aggfunc="sum", fill_value=0
-    )
-
-    if "INTERNACIONAL" not in operaciones.columns:
-        operaciones["INTERNACIONAL"] = 0
+    # Extraemos el primer nivel a DataFrames individuales.
+    pasajeros = df["PASAJEROS"]
+    operaciones = df["OPERACIONES"]
 
     # Calculamos las tendencias. Nuestra frecuencia es mensual, se usarán 12 periodos en automático.
     pasajeros["NACIONAL_trend"] = STL(pasajeros["NACIONAL"]).fit().trend
@@ -140,7 +130,7 @@ def graficar(df, df_tendencia, aeropuerto, tipo, origen):
         go.Scatter(
             x=df_tendencia.index,
             y=df_tendencia.values,
-            name="Tendencia a 12 periodos",
+            name="Tendencia (12 periodos)",
             mode="lines",
             line_color="#ffca28",
             line_width=4,
@@ -198,7 +188,7 @@ def graficar(df, df_tendencia, aeropuerto, tipo, origen):
         margin_b=160,
         title_font_size=36,
         plot_bgcolor="#1A1A2E",
-        paper_bgcolor="#16213E",        
+        paper_bgcolor="#16213E",
         annotations=[
             dict(
                 x=0.01,
@@ -235,8 +225,3 @@ def graficar(df, df_tendencia, aeropuerto, tipo, origen):
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
